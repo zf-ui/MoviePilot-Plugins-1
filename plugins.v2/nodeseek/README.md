@@ -17,10 +17,12 @@ NodeSeek 论坛每日自动签到插件，适用于 [MoviePilot](https://github.
 
 1. 浏览器登录 [NodeSeek](https://www.nodeseek.com/)
 2. 按 `F12` 打开开发者工具 → `Application`（应用）→ `Cookies` → `https://www.nodeseek.com`
-3. 复制名为 **`nodeseek.com`** 的 Cookie 值（或整段 Cookie 字符串）
+3. 复制**整段 Cookie 字符串**（必须包含 `session`、`pjwt`、`cf_clearance` 等字段）
 4. 粘贴到插件配置的「Cookie」输入框
 
-> ⚠️ 不要只贴 `session=`。Cloudflare 看到这个字段会下发 JS 挑战页，curl_cffi 过不了。插件会自动忽略 `session`，只发送 `nodeseek.com` 等业务 Cookie。
+> ⚠️ **必须带上 `session` 字段**：它是 NodeSeek 的登录态凭证，缺失时签到接口会返回 `USER NOT FOUND`。本 fork 已修复上游版本错误剔除 `session` 导致永远误报「Cookie 已失效」的问题，现在会完整发送全部 Cookie。
+
+> ⚠️ `cf_clearance` 与签发时的浏览器 IP/UA 绑定，从 NAS 直接请求可能触发 Cloudflare 挑战，此时插件会自动走浏览器上下文兜底，或开启系统代理。
 
 > ⚠️ Cookie 会过期。失效时插件会发送「Cookie 已失效」通知，重新复制更新即可。
 
@@ -68,8 +70,8 @@ NodeSeek 签到
 
 | 问题 | 说明 |
 |------|------|
-| 日志报 `USER NOT FOUND` | Cookie 已失效，重新获取后更新配置 |
-| 日志报 `Cloudflare 拦截` / JS 挑战 | Cookie 里含 `session` 会被 Cloudflare 挑战；插件会自动丢掉该字段。仍失败再确认系统代理 |
+| 日志报 `USER NOT FOUND` | Cookie 已失效（或 Cookie 中缺少 `session` 字段），重新获取完整 Cookie 后更新配置 |
+| 日志报 `Cloudflare 拦截` / JS 挑战 | `cf_clearance` 与 IP/UA 绑定失效导致；确认已安装 curl_cffi，必要时开启系统代理 |
 | 日志报 `high risk action` | 请求头不全或 IP 风控，确认已安装 curl_cffi 并重试 |
 | 签到无通知 | 检查「发送通知」总开关是否开启 |
 

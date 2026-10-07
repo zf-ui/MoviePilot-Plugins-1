@@ -1,5 +1,11 @@
 # MoviePilot-Plugins
 
+> **📌 本仓库说明（Fork）**
+>
+> 本仓库 fork 自 **[JinxJie/MoviePilot-Plugins](https://github.com/JinxJie/MoviePilot-Plugins)**，原作者 **JinxJie**，在此感谢原作者的工作。
+>
+> 本 fork 修复了 **NodeSeek 自动签到** 插件的一个关键 bug：原版本在所有请求路径中错误地剔除了 Cookie 里的 `session` 字段，而 `session` 正是 NodeSeek 的登录态凭证——缺失时签到接口必然返回 `USER NOT FOUND`，导致插件永远误报「Cookie 已失效」。修复后（v1.0.2 / v3.0.1）完整发送全部 Cookie 字段，签到恢复正常。
+
 JinxJie 的 [MoviePilot](https://github.com/jxxghp/MoviePilot) 第三方插件库。
 
 本库 fork 自官方 [jxxghp/MoviePilot-Plugins](https://github.com/jxxghp/MoviePilot-Plugins)，仅保留本人开发的插件，便于后续持续新增。
@@ -9,7 +15,7 @@ JinxJie 的 [MoviePilot](https://github.com/jxxghp/MoviePilot) 第三方插件�
 | 插件 | 目录 | 版本 | 说明 |
 |------|------|------|------|
 | HHCLUB 自动抽奖 | [`plugins.v2/hhlottery`](plugins.v2/hhlottery) | 1.0.8 | 定时自动抽奖、大奖即时通知、盈亏统计、站内信清理 |
-| NodeSeek 自动签到 | [`plugins.v2/nodeseek`](plugins.v2/nodeseek) | 1.0.1 | NodeSeek 论坛每日自动签到、鸡腿收益统计、消息通知 |
+| NodeSeek 自动签到 | [`plugins.v2/nodeseek`](plugins.v2/nodeseek) | 1.0.2（V3 版 3.0.1） | NodeSeek 论坛每日自动签到、鸡腿收益统计、消息通知（已修复 session Cookie 被剔除导致误报失效的问题） |
 | 插件残留清理 | [`plugins.v2/pluginresidueclean`](plugins.v2/pluginresidueclean) | 1.0.1 | 风险分级、单项清理、清理后复扫、定时扫描通知，默认不自动删除 |
 | 癫影自动签到 | [`plugins.v2/dian115sign`](plugins.v2/dian115sign) | 1.0.2 | 癫影每日自动签到、普通签/运气签开关、积分与连续签到统计、结果通知 |
 

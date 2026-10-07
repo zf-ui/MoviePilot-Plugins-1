@@ -49,7 +49,7 @@ class NodeSeek(_PluginBase):
     plugin_name = "NodeSeek 自动签到"
     plugin_desc = "NodeSeek 论坛每日自动签到 · curl_cffi 浏览器指纹过 Cloudflare · 鸡腿收益统计、签到记录与消息通知"
     plugin_icon = "https://raw.githubusercontent.com/JinxJie/MoviePilot-Plugins/main/icons/nodeseek.png"
-    plugin_version = "1.0.1"
+    plugin_version = "1.0.2"
     plugin_author = "JinxJie"
     author_url = "https://github.com/JinxJie"
     plugin_config_prefix = "nodeseek_"
@@ -478,7 +478,7 @@ class NodeSeek(_PluginBase):
         if "application/json" not in ct:
             text = (response.text or "")[:500]
             if "Just a moment" in text or "cf-challenge" in text or "challenge-platform" in text:
-                result["message"] = "Cloudflare JS 挑战未通过（Cookie 含 session 字段时常见）"
+                result["message"] = "Cloudflare JS 挑战未通过"
             elif "high risk action" in text:
                 result["message"] = "风控拦截（high risk action）"
             elif status == 403:
@@ -580,19 +580,13 @@ class NodeSeek(_PluginBase):
             except Exception:
                 pass
             cookies = []
-            skipped = []
             for name, value in self._parse_cookie_pairs(cookie):
-                if name.lower() == "session":
-                    skipped.append(name)
-                    continue
                 cookies.append({
                     "name": name,
                     "value": value,
                     "domain": ".nodeseek.com",
                     "path": "/",
                 })
-            if skipped:
-                logger.info("NodeSeek：浏览器签到忽略 Cookie 字段：%s", ",".join(skipped))
             if cookies:
                 context.add_cookies(cookies)
             result = page.evaluate(
@@ -731,7 +725,7 @@ class NodeSeek(_PluginBase):
         """
         签到请求：
         1) curl_cffi Session 先 GET 首页再 POST
-        2) 过滤会触发 Cloudflare JS 挑战的 session Cookie
+        2) 完整发送全部 Cookie 字段（session 是登录态凭证，不能丢弃）
         3) 仍遇到挑战页时改走浏览器上下文
         """
         resp = self._smart_post(url, cookie, proxies=proxies, timeout=timeout)
@@ -775,19 +769,13 @@ class NodeSeek(_PluginBase):
                 },
             )
             headers = dict(self.SIGN_HEADERS)
-            skipped = []
             kept = []
             for name, value in self._parse_cookie_pairs(cookie):
-                if name.lower() == "session":
-                    skipped.append(name)
-                    continue
                 kept.append(name)
                 try:
                     sess.cookies.set(name, value, domain=".nodeseek.com", path="/")
                 except Exception:
                     sess.cookies.set(name, value)
-            if skipped:
-                logger.info("NodeSeek 签到：已忽略会触发 Cloudflare 挑战的 Cookie 字段：%s", ",".join(skipped))
             if kept:
                 logger.info("NodeSeek 签到：实际发送 Cookie 字段：%s", ",".join(kept))
             resp = sess.post(url, headers=headers, data=b"")
@@ -799,7 +787,7 @@ class NodeSeek(_PluginBase):
         import requests
         logger.warning("NodeSeek 签到：未安装 curl_cffi，使用 requests 兜底（可能被 Cloudflare 拦截）")
         headers = dict(self.SIGN_HEADERS)
-        kept_pairs = [(n, v) for n, v in self._parse_cookie_pairs(cookie) if n.lower() != "session"]
+        kept_pairs = self._parse_cookie_pairs(cookie)
         if kept_pairs:
             headers["Cookie"] = "; ".join(f"{n}={v}" for n, v in kept_pairs)
         resp = requests.post(url, headers=headers, data=b"", proxies=proxies, timeout=timeout)
