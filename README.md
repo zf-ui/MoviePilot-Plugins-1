@@ -6,7 +6,6 @@
 >
 > 本 fork 修复了 **NodeSeek 自动签到** 插件的一个关键 bug：原版本在所有请求路径中错误地剔除了 Cookie 里的 `session` 字段，而 `session` 正是 NodeSeek 的登录态凭证——缺失时签到接口必然返回 `USER NOT FOUND`，导致插件永远误报「Cookie 已失效」。修复后（v1.0.2 / v3.0.1）完整发送全部 Cookie 字段，签到恢复正常。
 
-JinxJie 的 [MoviePilot](https://github.com/jxxghp/MoviePilot) 第三方插件库。
 
 ## 插件列表
 
